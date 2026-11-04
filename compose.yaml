@@ -1,0 +1,69 @@
+services:
+  frontend:
+    image: ghcr.io/komura28/aticurando-frontend:latest
+
+    ports:
+      - "5173:8080"
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    restart: on-failure
+
+
+  api:
+    image: ghcr.io/matos795/aticurando-api:latest
+
+    env_file:
+      - .env
+
+    environment:
+      PORT: 3002
+      MONGO_URI: mongodb://mongo:27017/aticurando
+
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3002/aticurando/v1/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    restart: on-failure
+
+
+  mongo:
+    image: mongo:8.0
+
+    volumes:
+      - mongo_data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    restart: unless-stopped
+
+
+volumes:
+  mongo_data:
