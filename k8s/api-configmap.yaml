@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: api-config
+  namespace: aticurando
+
+data:
+  PORT: "3002"
+  MONGO_URI: "mongodb://mongo:27017/aticurando"
+  JWT_EXPIRES_IN: "1d"
+  FRONTEND_URL: "http://localhost:5173"
+  PASSWORD_RESET_EXPIRES_MINUTES: "30"
+  BREVO_SENDER_NAME: "Aticurando"
